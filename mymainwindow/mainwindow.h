@@ -7,6 +7,7 @@ namespace Ui {
 class MainWindow;
 }
 
+class XML;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -20,8 +21,11 @@ private slots:
 
     void on_action_Dock_triggered();
 
+    void on_Loadconfig_clicked();
+
 private:
     Ui::MainWindow *ui;
+    XML *configxml;
     
 protected:
     void dragEnterEvent(QDragEnterEvent *event); // 拖动进入事件

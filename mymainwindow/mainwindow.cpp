@@ -10,7 +10,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMimeData>
-
+#include <xml.h>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -66,4 +66,25 @@ void MainWindow::on_action_New_triggered()
 void MainWindow::on_action_Dock_triggered()
 {
     ui->dockWidget->show();
+}
+
+void MainWindow::on_Loadconfig_clicked()
+{
+    //当前有can颗粒连接时，不处理配置文件加载
+    //读取配置文件名
+    QString configfilepath = ui->configpath->toPlainText();
+    //读配置文件
+    if(configfilepath.isEmpty())
+        return;
+    QFile file(configfilepath);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        //todo 提示文件加载失败
+        ui->statusBar->showMessage(tr("文件加载失败"), 4000);
+        return ;
+    }
+    //configxml = new XML();
+    configxml->writeXML();
+    //生成颗粒列表
+    ui->statusBar->showMessage(tr("文件加载成功"), 4000);
 }
