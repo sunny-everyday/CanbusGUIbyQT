@@ -2,7 +2,7 @@
 #include <QMessageBox>
 #include <QList>
 #include <QDebug>
-
+#include <QDomDocument>
 
 /*
 <?xml version="1.0" encoding="utf-8"?>
@@ -41,7 +41,7 @@
 void XML::writeXML()
 {
     //打开或创建文件
-    QString fileName{"test.xml"};
+    QString fileName{"config.xml"};
     QFile file(fileName);
     //QIODevice::Truncate表示清空原来的内容
     if(!file.open(QFile::WriteOnly|QFile::Truncate))
@@ -171,10 +171,14 @@ void XML::writeXML()
 }
 void XML::readXML()
 {
+     qDebug( "readXML");
     //打开或创建文件
-        QFile file("test.xml");
+        QFile file("config.xml");
         if(!file.open(QFile::ReadOnly))
+         {
+            qDebug( "open file failed");
             return;
+         }
 
         QDomDocument doc;
         //设置wangfei1.xml到文档
@@ -238,7 +242,7 @@ void XML::readXML()
                 if (!element.isNull())// 节点的确是一个元素
                 {
                     //输出第一个节点，包括第一个节点的属性，这个属性需要指定属性值，才能输出，如果没有输出空
-                    qDebug()<<element.tagName()<<" "<<element.attribute("id")<<" "<<element.attribute("time");
+                   // qDebug()<<element.tagName()<<" "<<element.attribute("id")<<" "<<element.attribute("time");
                     QDomNodeList list=element.childNodes();
                     for(int i=0;i<list.count();++i)
                     {
@@ -249,17 +253,17 @@ void XML::readXML()
                             qDebug()<<n.nodeName()<<":"<<n.toElement().text();
                             element = n.toElement();
                             //qDebug()<<element.nodeName()<<":"<<element.toElement().text();
-                            if (QString::compare(element.tagName(), QStringLiteral("ii")) == 0)
+                            if (QString::compare(element.tagName(), QStringLiteral("name")) == 0)
                             {
                                 // ...处理命令
                                 //cout<< "处理命令作者"<<endl;
                             }
-                            else if (QString::compare(element.tagName(), QStringLiteral("时间")) == 0)
+                            else if (QString::compare(element.tagName(), QStringLiteral("connect")) == 0)
                             {
                                 //cout<<"处理命令时间"<<endl;
                                 // ...处理命令
                             }
-                            else if (QString::compare(element.tagName(), QStringLiteral("个人说明")) == 0)
+                            else if (QString::compare(element.tagName(), QStringLiteral("description")) == 0)
                             {
                                 //cout<<"处理命令个人说明"<<endl;
                                 // ...处理命令

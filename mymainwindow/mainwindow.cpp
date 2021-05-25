@@ -83,8 +83,27 @@ void MainWindow::on_Loadconfig_clicked()
         ui->statusBar->showMessage(tr("文件加载失败"), 4000);
         return ;
     }
-    //configxml = new XML();
-    configxml->writeXML();
+    configxml->readXML();
+
     //生成颗粒列表
     ui->statusBar->showMessage(tr("文件加载成功"), 4000);
+}
+
+
+void MainWindow::on_Newconfig_clicked()
+{
+    configxml->writeXML();
+    ui->statusBar->showMessage(tr("生成配置文件"), 4000);
+}
+
+void MainWindow::on_Loadconfig_clear_clicked()
+{
+    QString configfilepath = "";
+    ui->configpath->setPlainText(configfilepath);
+}
+
+void MainWindow::on_Startlog_clear_clicked()
+{
+    QString configfilepath = "";
+    ui->logpath->setPlainText(configfilepath);
 }

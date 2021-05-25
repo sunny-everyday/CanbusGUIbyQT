@@ -23,6 +23,12 @@ private slots:
 
     void on_Loadconfig_clicked();
 
+    void on_Newconfig_clicked();
+
+    void on_Loadconfig_clear_clicked();
+
+    void on_Startlog_clear_clicked();
+
 private:
     Ui::MainWindow *ui;
     XML *configxml;
