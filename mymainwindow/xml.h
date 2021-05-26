@@ -11,15 +11,17 @@ class MainWindow;
 class XML
 {
 
-    public:
+public:
     explicit XML();
     ~XML();
 
     void writeXML();
-    void readXML();
+    bool readXML(QString Filepath);
+    void ReadparamList();
     void addXML();
     void deleteXML();
     void amendXML();
-    void writeXMLEG();
+
+
 };
 #endif // XML_H

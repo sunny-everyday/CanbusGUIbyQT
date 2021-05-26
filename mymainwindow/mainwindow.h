@@ -15,9 +15,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
+    void SetTable();
 private slots:
-    void on_action_New_triggered();
 
     void on_action_Dock_triggered();
 
@@ -32,6 +31,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     XML *configxml;
+
     
 protected:
     void dragEnterEvent(QDragEnterEvent *event); // 拖动进入事件

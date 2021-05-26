@@ -3,7 +3,7 @@
 #include <QList>
 #include "config.h"
 
-QList<QString> CONFIG::DevInformInWhiteList()
+void CONFIG::WhiteListtoDeviceList(QList<QStringList> WriteList)
 {
     QString name;
     QString busno;
@@ -46,6 +46,6 @@ QList<QString> CONFIG::DevInformInWhiteList()
     list.Add(strainYV);
     list.Add(strainZV);
     */
-    return list;
+    return ;
 
 }

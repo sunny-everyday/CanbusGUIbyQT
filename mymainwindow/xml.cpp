@@ -3,6 +3,7 @@
 #include <QList>
 #include <QDebug>
 #include <QDomDocument>
+#include <QUrl>
 
 /*
 <?xml version="1.0" encoding="utf-8"?>
@@ -169,114 +170,216 @@ void XML::writeXML()
     doc.save(out_stream,4); //缩进4格
     file.close();
 }
-void XML::readXML()
+/*
+<Host>
+<name>Tensar</name>
+<!--bus type: USBCanI,USBCanII, CANNET,USBCAN_E_U-->
+<connect>USBCANII</connect>
+<description>Host to control devices</description>
+</Host>
+<BusType>
+<Bus ID="0">
+  <channelnum>2</channelnum>
+  <baudrate>0</baudrate>
+</Bus>
+</BusType>
+ */
+QMap<QString, QString>guiconfighead;
+/*
+<Device ID="0">
+  <name>Node0</name>
+  <busno>0</busno>
+  <channel>0</channel>
+  <address>030</address>
+  <connect>Disconnected</connect>
+  <activity>Tx:0 Rx:0</activity>
+  <description>Placed for Demo</description>
+  <strainGF>2.08</strainGF>
+  <strainR>120</strainR>
+  <strainXV>0</strainXV>
+  <strainYV>0</strainYV>
+  <strainZV>0</strainZV>
+</Device>
+*/
+QList<QStringList> WhiteList;
+bool XML::readXML(QString Filepath)
 {
-     qDebug( "readXML");
+     qDebug()<<"readXML:"<<Filepath;
+
     //打开或创建文件
-        QFile file("config.xml");
-        if(!file.open(QFile::ReadOnly))
-         {
-            qDebug( "open file failed");
-            return;
-         }
+    QFile file(Filepath);
+    if(!file.open(QFile::ReadOnly))
+     {
+        qDebug( "open file failed");
+        return false;
+     }
 
-        QDomDocument doc;
-        //设置wangfei1.xml到文档
-        if(!doc.setContent(&file))
-        {
-            file.close();
-            return;
-        }
-
+    QDomDocument doc;
+    //设置wangfei1.xml到文档
+    if(!doc.setContent(&file))
+    {
         file.close();
+        return false;
+    }
+    file.close();
 
-        //返回根节点
-        QDomElement root=doc.documentElement();
-        qDebug()<<root.nodeName();
-        //如果xml根元素有属性（Version）将输出，Vinsion是用户自定义的属性，没有继续执行下一条命令
-        if (root.hasAttribute("Version"))  // 属性
-            qDebug() << root.attribute("Version");
-        /**********根元素之上（XML 声明、注释等）**********/
-        QDomNode node = root.previousSibling();
-        while (!node.isNull())
+    //返回根节点
+    QDomElement root=doc.documentElement();
+    qDebug()<<root.nodeName();
+    //如果xml根元素有属性（Version）将输出，Vinsion是用户自定义的属性，没有继续执行下一条命令
+    if (root.hasAttribute("Version"))  // 属性
+        qDebug() << root.attribute("Version");
+    /**********根元素之上（XML 声明、注释等）**********/
+    QDomNode node = root.previousSibling();
+    while (!node.isNull())
+    {
+        switch (node.nodeType())
         {
-            switch (node.nodeType())
+        case QDomNode::ProcessingInstructionNode :
+        {
+            QDomProcessingInstruction instruction = node.toProcessingInstruction();
+            //输出处理指令，是用户自定义的，比如字符串“name”对应处理指令得到名字，这个命令是用户写的
+            qDebug() << instruction.target() << instruction.data();
+            if (QString::compare(instruction.target(), "xml") == 0) // 开始文档（XML 声明）
             {
-            case QDomNode::ProcessingInstructionNode :
+                //cout<<"处理命令xml"<<endl;
+                // ...
+            }
+            else if (QString::compare(instruction.target(), "xml-stylesheet") == 0) // 处理指令
             {
-                QDomProcessingInstruction instruction = node.toProcessingInstruction();
-                //输出处理指令，是用户自定义的，比如字符串“name”对应处理指令得到名字，这个命令是用户写的
-                qDebug() << instruction.target() << instruction.data();
-                if (QString::compare(instruction.target(), "xml") == 0) // 开始文档（XML 声明）
-                {
-                    //cout<<"处理命令xml"<<endl;
-                    // ...
-                }
-                else if (QString::compare(instruction.target(), "xml-stylesheet") == 0) // 处理指令
-                {
-                    //cout<<"处理命令xml-stylesheet"<<endl;
-                    // ...
-                }
-                break;
+                //cout<<"处理命令xml-stylesheet"<<endl;
+                // ...
             }
-            case QDomNode::CommentNode :
-            {
-                QDomComment comment = node.toComment();
-                qDebug() << comment.data();
-                break;
-            }
-            default:
-                break;
-            }
-            node = node.previousSibling();
+            break;
         }
-
-        //获得第一个子节点
-        node=root.firstChild();
-        while(!node.isNull())  //如果节点不空
+        case QDomNode::CommentNode :
         {
-            if(node.isElement()) //如果节点是元素
-            {
-                //转换为元素
-                QDomElement element=node.toElement();
-                if (!element.isNull())// 节点的确是一个元素
-                {
-                    //输出第一个节点，包括第一个节点的属性，这个属性需要指定属性值，才能输出，如果没有输出空
-                   // qDebug()<<element.tagName()<<" "<<element.attribute("id")<<" "<<element.attribute("time");
-                    QDomNodeList list=element.childNodes();
-                    for(int i=0;i<list.count();++i)
-                    {
-                        QDomNode n=list.at(i);
-                        //node = list.at(i);
-                        if(node.isElement())
-                        {
-                            qDebug()<<n.nodeName()<<":"<<n.toElement().text();
-                            element = n.toElement();
-                            //qDebug()<<element.nodeName()<<":"<<element.toElement().text();
-                            if (QString::compare(element.tagName(), QStringLiteral("name")) == 0)
-                            {
-                                // ...处理命令
-                                //cout<< "处理命令作者"<<endl;
-                            }
-                            else if (QString::compare(element.tagName(), QStringLiteral("connect")) == 0)
-                            {
-                                //cout<<"处理命令时间"<<endl;
-                                // ...处理命令
-                            }
-                            else if (QString::compare(element.tagName(), QStringLiteral("description")) == 0)
-                            {
-                                //cout<<"处理命令个人说明"<<endl;
-                                // ...处理命令
-                            }
-                        }
+            QDomComment comment = node.toComment();
+            qDebug() << comment.data();
+            break;
+        }
+        default:
+            break;
+        }
+        node = node.previousSibling();
+    }
 
+    //获得第一个子节点
+    node=root.firstChild();
+    if(!node.isNull())  //如果节点不空
+    {
+        if(node.isElement()) //如果节点是元素
+        {
+            //转换为元素
+            QDomElement element=node.toElement();
+            if (!element.isNull())// 节点的确是一个元素
+            {
+                //输出第一个节点
+                //qDebug()<<"first node"<<element.tagName();
+                if(element.tagName() !=QString::fromLocal8Bit("Host"))
+                    return false;
+
+                QDomNodeList list=element.childNodes();
+                for(int i=0;i<list.count();++i)
+                {
+                    QDomNode n=list.at(i);
+                    if(n.isElement())
+                    {
+                        QDomElement Hostinfo=n.toElement();
+                        //qDebug()<<Hostinfo.tagName()<<":"<<n.toElement().text();
+                        guiconfighead.insert(Hostinfo.tagName(),n.toElement().text());
                     }
                 }
             }
-            //下一个兄弟节点
-            node=node.nextSibling();
         }
+        //下一个兄弟节点
+        node=node.nextSibling();
+        if (!node.isNull())// 节点的确是一个元素
+        {
+            //转换为元素
+            QDomElement element=node.toElement();
+            //输出第二个节点
+            //qDebug()<<element.tagName()<<" "<<element.attribute("ID");
+            if(element.tagName() !=QString::fromLocal8Bit("BusType"))
+                return false;
+
+            QDomNodeList list=element.childNodes();
+            for(int i=0;i<list.count();++i)
+            {
+                QDomNode m=list.at(i);
+                if(m.isElement())
+                {
+                    //qDebug()<<m.nodeName()<<":"<<m.toElement().text();
+                    QDomNodeList Businfo=m.childNodes();
+                    for(int j=0;j<Businfo.count();++j)
+                    {
+                        QDomNode o=Businfo.at(j);
+                        if(o.isElement())
+                        {
+                            //qDebug()<<o.nodeName()<<":"<<o.toElement().text();
+                            guiconfighead.insert(o.nodeName(),o.toElement().text());
+                        }
+                    }
+                }
+            }
+        }
+
+        //下一个兄弟节点
+        node=node.nextSibling();
+        if (!node.isNull())
+        {
+            QStringList SingleDevice;
+            //转换为元素
+            QDomElement element=node.toElement();
+            //输出第三个节点
+            //qDebug()<<element.tagName()<<" "<<element.attribute("ID");
+            if(element.tagName() !=QString::fromLocal8Bit("WhiteList"))
+                return false;
+
+            QDomNodeList list=element.childNodes();
+            for(int i=0;i<list.count();++i)
+            {
+                QDomNode m=list.at(i);
+                if(m.isElement())
+                {
+                    //qDebug()<<m.nodeName()<<":"<<m.toElement().text();
+                    QDomNodeList Businfo=m.childNodes();
+                    for(int j=0;j<Businfo.count();++j)
+                    {
+                        QDomNode o=Businfo.at(j);
+                        if(o.isElement())
+                        {
+                            //qDebug()<<o.nodeName()<<":"<<o.toElement().text();
+                            SingleDevice<<o.toElement().text();
+                        }
+                    }
+                }
+            }
+         WhiteList.append(SingleDevice);
+        }
+    }
 }
+
+void XML::ReadparamList()
+{
+    QMap<QString,QString>::Iterator it = guiconfighead.begin();
+
+    while(it!=guiconfighead.end())
+    {
+        qDebug()<<it.key()<<" = " <<it.value();
+        it++;
+    }
+
+    QList<QStringList>::iterator out = WhiteList.begin();
+    while(out!=WhiteList.end())
+    {
+        qDebug()<<(*out);
+        out++;
+    }
+
+}
+
+//以下代码没有做相应修改 仅供参考
 void XML::addXML()
 {
     //打开文件
@@ -466,73 +569,5 @@ void XML::amendXML()
 
 }
 
-void writeXMLEG()
-{
-    //打开或创建文件
-    QString fileName{"test.xml"};
-    QFile file(fileName);
-    //QIODevice::Truncate表示清空原来的内容
-    if(!file.open(QFile::WriteOnly|QFile::Truncate))
-        return;
-
-    //创建xml文档在内存中
-    QDomDocument doc;
-    //添加处理命令
-    QDomProcessingInstruction instruction;
-    instruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
-    //创建注释
-    QDomComment comment;
-    comment = doc.createComment(QString::fromLocal8Bit("离开是为了更好的归来"));
-    QDomProcessingInstruction styleInstruction;
-    styleInstruction= doc.createProcessingInstruction("xml-stylesheet", "type=\"text/css\" href=\"style.css\"");
-    doc.appendChild(instruction); //文档开始声明
-    doc.appendChild(comment);
-    doc.appendChild(styleInstruction);  // 处理指令
 
 
-    //添加根节点
-    QDomElement root=doc.createElement("library");
-    root.setAttribute("Version","2.1");
-    doc.appendChild(root);
-    //添加第一个子节点及其子元素
-    QDomElement book=doc.createElement("book");
-    //方式一：创建属性  其中键值对的值可以是各种类型
-    book.setAttribute("id",1);
-    //方式二：创建属性 值必须是字符串
-    QDomAttr time=doc.createAttribute("time");
-    time.setValue("2013/6/13");
-    book.setAttributeNode(time);
-    QDomElement title=doc.createElement("title"); //创建子元素
-    QDomText text; //设置括号标签中间的值
-    text=doc.createTextNode("C++ primer");
-    book.appendChild(title);
-    title.appendChild(text);
-    QDomElement author=doc.createElement("author"); //创建子元素
-    text=doc.createTextNode("Stanley Lippman");
-    author.appendChild(text);
-    book.appendChild(author);
-    //添加节点book做为根节点的子节点
-    root.appendChild(book);
-
-    //添加第二个子节点及其子元素
-    book=doc.createElement("book");
-    book.setAttribute("id",2);
-    time=doc.createAttribute("time");
-    time.setValue("2007/5/25");
-    book.setAttributeNode(time);
-    title=doc.createElement("title");
-    text=doc.createTextNode("Thinking in Java");
-    book.appendChild(title);
-    title.appendChild(text);
-
-    author=doc.createElement("author");
-    text=doc.createTextNode("Bruce Eckel");
-    author.appendChild(text);
-    book.appendChild(author);
-    root.appendChild(book);
-
-    //输出到文件
-    QTextStream out_stream(&file);
-    doc.save(out_stream,4); //缩进4格
-    file.close();
-}

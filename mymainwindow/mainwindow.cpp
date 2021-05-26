@@ -11,6 +11,7 @@
 #include <QTextStream>
 #include <QMimeData>
 #include <xml.h>
+#include "qstandarditemmodel.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -25,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     permanent->setFrameStyle(QFrame::Box | QFrame::Sunken);
     permanent->setText("www.Strdal.org");
     ui->statusBar->addPermanentWidget(permanent);
-
+    SetTable();
 }
 
 MainWindow::~MainWindow()
@@ -55,13 +56,6 @@ void MainWindow::dropEvent(QDropEvent *event)           // 放下事件
     }
 }
 
-void MainWindow::on_action_New_triggered()
-{
-    // 新建文本编辑器部件
-    QTextEdit *edit = new QTextEdit(this);
-
-
-}
 
 void MainWindow::on_action_Dock_triggered()
 {
@@ -73,22 +67,58 @@ void MainWindow::on_Loadconfig_clicked()
     //当前有can颗粒连接时，不处理配置文件加载
     //读取配置文件名
     QString configfilepath = ui->configpath->toPlainText();
+
     //读配置文件
     if(configfilepath.isEmpty())
         return;
-    QFile file(configfilepath);
-    if (!file.open(QFile::WriteOnly | QFile::Text))
-    {
-        //todo 提示文件加载失败
+
+    //去掉多余斜杠
+    if(configfilepath.contains("file:///"))
+        configfilepath.replace("file:///","");
+
+
+    if(!configxml->readXML(configfilepath))
         ui->statusBar->showMessage(tr("文件加载失败"), 4000);
-        return ;
+    else
+    {
+        //打印配置文件的参数信息
+        configxml->ReadparamList();
+        //生成颗粒列表
+
+        ui->statusBar->showMessage(tr("文件加载成功"), 4000);
     }
-    configxml->readXML();
-
-    //生成颗粒列表
-    ui->statusBar->showMessage(tr("文件加载成功"), 4000);
+    return;
 }
+void MainWindow::SetTable()
+{
+    QStandardItemModel* model = new QStandardItemModel();
 
+   /* 设置列数 */
+    model->setColumnCount(7);
+    model->setHeaderData(0, Qt::Horizontal, "ID");
+    model->setHeaderData(1, Qt::Horizontal, "DeviceName");
+    model->setHeaderData(2, Qt::Horizontal, "Bus");
+    model->setHeaderData(3, Qt::Horizontal, "Channel");
+    model->setHeaderData(4, Qt::Horizontal, "Address");
+    model->setHeaderData(5, Qt::Horizontal, "Status");
+    model->setHeaderData(6, Qt::Horizontal, "Throughput");
+
+   /* 设置行数 */
+   model->setRowCount(14);
+   model->setHeaderData(0, Qt::Vertical, "1");
+
+   ui->tableView->setModel(model);
+   /* 行颜色交替显示 */
+   ui->tableView->setAlternatingRowColors(true);
+   /* 不允许在图形界面修改内容 */
+   ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+   /* 在表格内加入内容 */
+   model->setItem(0, 0, new QStandardItem("数学"));
+
+   /* 显示表 */
+   ui->tableView->show();
+}
 
 void MainWindow::on_Newconfig_clicked()
 {

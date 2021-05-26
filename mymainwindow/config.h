@@ -15,7 +15,9 @@ public:
     explicit CONFIG();
     ~CONFIG();
 
-    QList<QString> DevInformInWhiteList();
 
+private:
+    QList<QMap<QString, QString>>DeviceList;
+    void WhiteListtoDeviceList(QList<QStringList> WriteList);
 };
 #endif // CONFIG_H
