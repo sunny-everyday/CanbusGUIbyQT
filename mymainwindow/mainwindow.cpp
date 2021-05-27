@@ -95,7 +95,7 @@ void MainWindow::SetTable()
 
    /* 设置列数 */
     model->setColumnCount(7);
-    model->setHeaderData(0, Qt::Horizontal, "ID");
+    model->setHeaderData(0, Qt::Horizontal, "Choose");
     model->setHeaderData(1, Qt::Horizontal, "DeviceName");
     model->setHeaderData(2, Qt::Horizontal, "Bus");
     model->setHeaderData(3, Qt::Horizontal, "Channel");
@@ -114,7 +114,16 @@ void MainWindow::SetTable()
    ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
    /* 在表格内加入内容 */
-   model->setItem(0, 0, new QStandardItem("数学"));
+   //model->setItem(0, 0, new QStandardItem("数学"));
+   QStandardItem *aItem;
+   aItem = new QStandardItem(0,0);
+   aItem->setCheckable(true);
+   aItem->setCheckState(Qt::Checked);
+   //aItem->checkState;
+   //aItem->setText("1");
+   model->setItem(0, 0, aItem);
+
+
 
    /* 显示表 */
    ui->tableView->show();
