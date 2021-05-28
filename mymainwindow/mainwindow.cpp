@@ -11,7 +11,7 @@
 #include <QTextStream>
 #include <QMimeData>
 #include <xml.h>
-#include "qstandarditemmodel.h"
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -81,33 +81,53 @@ void MainWindow::on_Loadconfig_clicked()
         ui->statusBar->showMessage(tr("文件加载失败"), 4000);
     else
     {
+        ClearTable();
         //打印配置文件的参数信息
-        configxml->ReadparamList();
+        //configxml->ReadparamList();
         //生成颗粒列表
-
+        configxml->updateTableview(nodelist);
+        /* 显示表 */
+        ui->tableView->show();
         ui->statusBar->showMessage(tr("文件加载成功"), 4000);
     }
     return;
 }
+
+
+void MainWindow::on_Newconfig_clicked()
+{
+    configxml->writeXML();
+    ui->statusBar->showMessage(tr("生成配置文件"), 4000);
+}
+void MainWindow::ClearTable()
+{
+    if(nodelist)
+    {
+        for(int i = 1; i <nodelist->rowCount(); i++)
+        {
+            nodelist->takeRow(i);
+        }
+    }
+
+}
 void MainWindow::SetTable()
 {
-    QStandardItemModel* model = new QStandardItemModel();
+    nodelist = new QStandardItemModel();
 
    /* 设置列数 */
-    model->setColumnCount(7);
-    model->setHeaderData(0, Qt::Horizontal, "Choose");
-    model->setHeaderData(1, Qt::Horizontal, "DeviceName");
-    model->setHeaderData(2, Qt::Horizontal, "Bus");
-    model->setHeaderData(3, Qt::Horizontal, "Channel");
-    model->setHeaderData(4, Qt::Horizontal, "Address");
-    model->setHeaderData(5, Qt::Horizontal, "Status");
-    model->setHeaderData(6, Qt::Horizontal, "Throughput");
+    nodelist->setColumnCount(6);
+    nodelist->setHeaderData(0, Qt::Horizontal, "DeviceName");
+    nodelist->setHeaderData(1, Qt::Horizontal, "Bus");
+    nodelist->setHeaderData(2, Qt::Horizontal, "Channel");
+    nodelist->setHeaderData(3, Qt::Horizontal, "Address");
+    nodelist->setHeaderData(4, Qt::Horizontal, "Status");
+    nodelist->setHeaderData(5, Qt::Horizontal, "Throughput");
 
    /* 设置行数 */
-   model->setRowCount(14);
-   model->setHeaderData(0, Qt::Vertical, "1");
+   nodelist->setRowCount(10);
+   nodelist->setHeaderData(0, Qt::Vertical, "1");
 
-   ui->tableView->setModel(model);
+   ui->tableView->setModel(nodelist);
    /* 行颜色交替显示 */
    ui->tableView->setAlternatingRowColors(true);
    /* 不允许在图形界面修改内容 */
@@ -115,26 +135,17 @@ void MainWindow::SetTable()
 
    /* 在表格内加入内容 */
    //model->setItem(0, 0, new QStandardItem("数学"));
-   QStandardItem *aItem;
-   aItem = new QStandardItem(0,0);
-   aItem->setCheckable(true);
-   aItem->setCheckState(Qt::Checked);
+   //QStandardItem *aItem;
+   //aItem = new QStandardItem(0,0);
+   //aItem->setCheckable(true);
+  // aItem->setCheckState(Qt::Checked);
    //aItem->checkState;
    //aItem->setText("1");
-   model->setItem(0, 0, aItem);
-
-
+   //model->setItem(0, 0, aItem);
 
    /* 显示表 */
    ui->tableView->show();
 }
-
-void MainWindow::on_Newconfig_clicked()
-{
-    configxml->writeXML();
-    ui->statusBar->showMessage(tr("生成配置文件"), 4000);
-}
-
 void MainWindow::on_Loadconfig_clear_clicked()
 {
     QString configfilepath = "";

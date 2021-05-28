@@ -325,10 +325,15 @@ bool XML::readXML(QString Filepath)
         }
 
         //下一个兄弟节点
+        //清WhiteList
+        foreach(QStringList device,WhiteList)
+        {
+            WhiteList.removeOne(device);
+            qDebug()<<"WhiteList size --"<<WhiteList.size();
+        }
         node=node.nextSibling();
         if (!node.isNull())
         {
-            QStringList SingleDevice;
             //转换为元素
             QDomElement element=node.toElement();
             //输出第三个节点
@@ -339,6 +344,7 @@ bool XML::readXML(QString Filepath)
             QDomNodeList list=element.childNodes();
             for(int i=0;i<list.count();++i)
             {
+                QStringList SingleDevice;
                 QDomNode m=list.at(i);
                 if(m.isElement())
                 {
@@ -354,8 +360,9 @@ bool XML::readXML(QString Filepath)
                         }
                     }
                 }
+                WhiteList.append(SingleDevice);
             }
-         WhiteList.append(SingleDevice);
+
         }
     }
 }
@@ -373,12 +380,47 @@ void XML::ReadparamList()
     QList<QStringList>::iterator out = WhiteList.begin();
     while(out!=WhiteList.end())
     {
-        qDebug()<<(*out);
+        QStringList oneRow = *out;
+        for(int i = 0;i < 6; ++i )
+        {
+            QString item = oneRow.at(i);
+            qDebug()<<item<<endl;
+        }
         out++;
     }
 
 }
+//更新桌面列表
+void XML::updateTableview(QStandardItemModel* nodelist)
+{
+    int rowIndex = 0;
+    //* 在表格内加入内容 */
+    QList<QStringList>::iterator out = WhiteList.begin();
+    while(out!=WhiteList.end())
+    {
+        QStringList oneRow = *out;
 
+        QStandardItem *aItem;
+        aItem = new QStandardItem(0,0);
+        aItem->setCheckable(true);
+        aItem->setCheckState(Qt::Checked);
+        //aItem->checkState;
+        aItem->setText(oneRow.at(0));
+        nodelist->setItem(rowIndex, 0, aItem);
+        for(int i = 1;i < 6; ++i )
+        {
+            QString item = oneRow.at(i);
+            nodelist->setItem(rowIndex, i, new QStandardItem(item));
+        }
+
+        qDebug()<<(*out);
+        out++;
+        rowIndex++;
+    }
+
+
+
+}
 //以下代码没有做相应修改 仅供参考
 void XML::addXML()
 {

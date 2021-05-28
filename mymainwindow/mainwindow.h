@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "qstandarditemmodel.h"
 
 namespace Ui {
 class MainWindow;
@@ -15,6 +16,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void ClearTable();
     void SetTable();
 private slots:
 
@@ -31,6 +33,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     XML *configxml;
+    QStandardItemModel* nodelist;
 
     
 protected:

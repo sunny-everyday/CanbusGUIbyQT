@@ -3,6 +3,7 @@
 
 #include <QFile>
 #include <QTextStream>
+#include "qstandarditemmodel.h"
 namespace Ui {
 class MainWindow;
 }
@@ -18,6 +19,7 @@ public:
     void writeXML();
     bool readXML(QString Filepath);
     void ReadparamList();
+    void updateTableview(QStandardItemModel* nodelist);
     void addXML();
     void deleteXML();
     void amendXML();
